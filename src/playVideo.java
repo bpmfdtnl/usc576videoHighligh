@@ -22,6 +22,7 @@ class playVideo {
         JFrame frame = new JFrame("Media Player");
         JButton video=new JButton("Choose Frame Directory");
         JButton audio = new JButton("Choose Audio File");
+        JButton start = new JButton("Play");
 
         video.addActionListener(new ActionListener() {
             @Override
@@ -30,24 +31,52 @@ class playVideo {
                 jfc.setDialogTitle("Choose a directory to save your file: ");
                 jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
-                int returnValue = jfc.showSaveDialog(null);
+                int returnValue = jfc.showOpenDialog(null);
                 if (returnValue == JFileChooser.APPROVE_OPTION) {
                     if (jfc.getSelectedFile().isDirectory()) {
                         filePath = jfc.getSelectedFile().getPath();
                         readImages(images, filePath);
                         frame.remove(video);
-                        frame.remove(audio);
-                        frame.setSize(320, 180);
-                        tm.start();
                     }
                 }
             }
         });
 
+        audio.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+                jfc.setDialogTitle("Choose a dot wav file: ");
+                jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                int returnValue = jfc.showOpenDialog(null);
+                if (returnValue == JFileChooser.APPROVE_OPTION) {
+                    if (jfc.getSelectedFile().isFile()) {
+                        filePath = jfc.getSelectedFile().getPath();
+                        System.out.println("--------dot wav selected---------");
+                        frame.remove(audio);
+                        frame.setSize(320, 180);
+                    }
+                }
+            }
+        });
+
+
+        start.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tm.start();
+                frame.remove(start);
+            }
+        });
+
+
+
         video.setBounds(50,100,95,30);
         audio.setBounds(50,200,95,30);
+        start.setBounds(50,200,95,30);
         frame.add(video);
         frame.add(audio);
+        frame.add(start);
 
         GridBagLayout gLayout = new GridBagLayout();
         frame.getContentPane().setLayout(gLayout);
