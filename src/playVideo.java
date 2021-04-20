@@ -10,7 +10,7 @@ import java.io.RandomAccessFile;
 
 class playVideo {
     static int count = 0;
-    static int size = 100;
+    static int size = 200;
     static Timer tm;
     static String filePath;
     static BufferedImage[] images = new BufferedImage[size];
