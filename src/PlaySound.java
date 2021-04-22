@@ -2,6 +2,7 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import java.io.File;
+import java.io.FileOutputStream;
 
 public class PlaySound {
     Clip clip;
@@ -11,11 +12,17 @@ public class PlaySound {
         clip.start();
     }
 
-    public long getPosition(){
-        return clip.getFramePosition();
+    public long getTime(){
+        return clip.getMicrosecondPosition();
     }
 
+    public void end(){
+        clip.close();
+    }
+
+
     public float getSampleRate(){
+        System.out.println(format.getFrameRate());
         return format.getFrameRate();
     }
 
@@ -26,7 +33,7 @@ public class PlaySound {
             this.format = clip.getFormat();
             clip.open(AudioSystem.getAudioInputStream(Sound));
         } catch (Exception ignored) {
-
         }
+
     }
 }
