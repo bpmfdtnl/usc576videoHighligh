@@ -11,13 +11,20 @@ public class PlaySound {
         clip.start();
     }
 
-    public long getPosition(){
-        return clip.getFramePosition();
+    public long getTime() {
+        return clip.getMicrosecondPosition();
     }
 
-    public float getSampleRate(){
-        return format.getFrameRate();
+    public void stop() {
+        clip.stop();
     }
+
+    public void reset() {
+        clip.stop();
+        clip.drain();
+        clip.close();
+    }
+
 
     public void loadFile(String filePath) {
         try {
@@ -26,7 +33,7 @@ public class PlaySound {
             this.format = clip.getFormat();
             clip.open(AudioSystem.getAudioInputStream(Sound));
         } catch (Exception ignored) {
-
         }
+
     }
 }
