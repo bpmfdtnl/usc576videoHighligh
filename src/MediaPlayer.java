@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
 
 /**
  * @author: billwang
@@ -11,23 +12,23 @@ import java.awt.image.BufferedImage;
  */
 public class MediaPlayer {
     int frameCount = 0;
-    int videoSeconds = 100;
-    int videoFrames = videoSeconds * 30;
+    int videoFrames;
     String videoPath;
     String audioPath;
-    BufferedImage[] images = new BufferedImage[videoFrames];
     PlaySound audioPlayer = new PlaySound();
     JLabel currFrame = new JLabel();
     Thread videoThread;
-    Thread audioThread;
-
+    boolean isPlaying = false;
+    boolean isPaused = false;
+    BufferedImage imgOne = new BufferedImage(320, 180, BufferedImage.TYPE_INT_RGB);
+    File[] toRead;
 
     public MediaPlayer() {
         JFrame frame = new JFrame("Media Player");
-        JButton video = new JButton("Choose Frame Directory");
-        JButton audio = new JButton("Choose Audio File");
+        JButton video = new JButton("Choose Frame");
+        JButton audio = new JButton("Choose Audio");
         JButton start = new JButton("Play");
-        JButton pause = new JButton("Pause");
+        JButton pause = new JButton(" Pause");
 
         video.addActionListener(new ActionListener() {
             @Override
@@ -40,7 +41,9 @@ public class MediaPlayer {
                 if (returnValue == JFileChooser.APPROVE_OPTION) {
                     if (jfc.getSelectedFile().isDirectory()) {
                         videoPath = jfc.getSelectedFile().getPath();
-                        VideoPlayer.readImages(images, videoPath, videoFrames);
+                        toRead = VideoPlayer.readImages(videoPath);
+//                        videoFrames = toRead.length;
+                        videoFrames = 150;
                     }
                 }
             }
@@ -65,36 +68,36 @@ public class MediaPlayer {
         start.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Runnable video = new Runnable() {
-                    @Override
-                    public void run() {
-                        double spf = audioPlayer.getSampleRate() / 30;
+                if (!isPlaying) {
+                    start.setText("Stop");
+                    isPlaying = true;
 
-                        while (frameCount * 33333 <= audioPlayer.getTime()){
-                            currFrame.setIcon(new ImageIcon(images[frameCount++]));
-                        }
-                        while (frameCount * 33333 > audioPlayer.getTime()){
-                        }
-                        while (frameCount < videoFrames){
-                            if (frameCount * 33333 > audioPlayer.getTime()){ }
-                            if (frameCount * 33333 <= audioPlayer.getTime()){
-                                currFrame.setIcon(new ImageIcon(images[frameCount++]));
+                    Runnable video = new Runnable() {
+                        @Override
+                        public void run() {
+                            frame.add(pause);
+                            while (frameCount * 33333 <= audioPlayer.getTime()) {
+                                VideoPlayer.readImageRGB(toRead[frameCount++], imgOne);
+                                currFrame.setIcon(new ImageIcon(imgOne));
                             }
+                            while (frameCount * 33333 > audioPlayer.getTime()) {
+                            }
+                            while (frameCount < videoFrames) {
+                                if (frameCount * 33333 <= audioPlayer.getTime()) {
+                                    VideoPlayer.readImageRGB(toRead[frameCount++], imgOne);
+                                    currFrame.setIcon(new ImageIcon(imgOne));
+                                }
+                            }
+                            audioPlayer.reset();
                         }
-                        audioPlayer.end();
-                    }
-                };
+                    };
 
-                Runnable audio = new Runnable() {
-                    @Override
-                    public void run() {
-                        audioPlayer.play();
-                    }
-                };
-                videoThread = new Thread(video);
-                audioThread = new Thread(audio);
-                audioThread.start();
-                videoThread.start();
+                    videoThread = new Thread(video);
+                    videoThread.start();
+                    audioPlayer.play();
+                } else {
+                    System.exit(0);
+                }
 
             }
         });
@@ -102,43 +105,55 @@ public class MediaPlayer {
         pause.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    videoThread.wait();
-                    audioThread.wait();
-                } catch (InterruptedException interruptedException) {
-                    interruptedException.printStackTrace();
+                if (!isPaused) {
+                    audioPlayer.stop();
+                    pause.setText("Resume");
+                } else {
+                    audioPlayer.play();
+                    pause.setText("Pause");
                 }
+                isPaused = !isPaused;
             }
         });
 
-        //set up GUI layout
         {
-            video.setBounds(50, 100, 95, 30);
-            audio.setBounds(50, 200, 95, 30);
-            start.setBounds(50, 300, 95, 30);
-            frame.setBounds(50, 400, 95, 30);
-
-            frame.add(video);
-            frame.add(audio);
-            frame.add(start);
-            frame.add(pause);
-
-            GridBagLayout gLayout = new GridBagLayout();
-            frame.getContentPane().setLayout(gLayout);
-            currFrame = new JLabel();
+            frame.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
+            //natural height, maximum width
             c.fill = GridBagConstraints.HORIZONTAL;
-            c.anchor = GridBagConstraints.CENTER;
+
             c.weightx = 0.5;
             c.gridx = 0;
+            c.gridy = 0;
+            frame.add(video, c);
+
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.weightx = 0.5;
+            c.gridx = 1;
+            c.gridy = 0;
+            frame.add(audio, c);
+
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.weightx = 0.5;
+            c.gridx = 2;
+            c.gridy = 0;
+            frame.add(start, c);
+
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.ipady = 40;      //make this component tall
+            c.weightx = 0.0;
+            c.gridwidth = 3;
+            c.gridx = 0;
             c.gridy = 1;
+            frame.add(currFrame, c);
+
             frame.setLocationRelativeTo(null);
-            frame.getContentPane().add(currFrame, c);
             frame.pack();
             frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            frame.setSize(450, 180);
+            frame.setSize(450, 300);
             frame.setVisible(true);
         }
+
     }
 
     public static void main(String[] args) {
