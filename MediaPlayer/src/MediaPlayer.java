@@ -24,12 +24,14 @@ public class MediaPlayer {
     File[] toRead;
 
     public MediaPlayer() {
+        //Add buttons to GUI
         JFrame frame = new JFrame("Media Player");
         JButton video = new JButton("Choose Frame");
         JButton audio = new JButton("Choose Audio");
         JButton start = new JButton("Play");
         JButton pause = new JButton(" Pause");
 
+        //read video directory and get list of files
         video.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -49,6 +51,7 @@ public class MediaPlayer {
             }
         });
 
+        //open port to play audio
         audio.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -65,6 +68,7 @@ public class MediaPlayer {
             }
         });
 
+        //start playing audio, open new thread for video
         start.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -72,6 +76,8 @@ public class MediaPlayer {
                     start.setText("Stop");
                     isPlaying = true;
 
+                    //video is constantly checking if it is following audio speed
+                    //if too fast, stuck in while loop
                     Runnable video = new Runnable() {
                         @Override
                         public void run() {
@@ -102,6 +108,7 @@ public class MediaPlayer {
             }
         });
 
+        //pause the audio, video will follow
         pause.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -116,6 +123,7 @@ public class MediaPlayer {
             }
         });
 
+        //layout of GUI
         {
             frame.setLayout(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();

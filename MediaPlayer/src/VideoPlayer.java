@@ -6,16 +6,21 @@ import java.util.Arrays;
 
 public class VideoPlayer {
 
-    //read all rgb files from filePath directory
+    //get all files from directory and sort based on file name
     public static File[] readImages(String filePath) {
         File folder = new File(filePath);
         File[] frames = folder.listFiles();
         assert frames != null;
-        return Arrays.stream(frames).filter(file -> file.getName().endsWith(".rgb")).sorted((o1, o2) -> {
-            int name1 = Integer.parseInt(o1.getName().substring(0, o1.getName().length() - 4).substring(5));
-            int name2 = Integer.parseInt(o2.getName().substring(0, o2.getName().length() - 4).substring(5));
-            return Integer.compare(name1, name2);
-        }).toArray(File[]::new);
+
+        return Arrays.stream(frames).
+                filter(file -> file.getName().endsWith(".rgb"))
+                .sorted((o1, o2) ->
+                {
+                    int name1 = Integer.parseInt(o1.getName().substring(0, o1.getName().length() - 4).substring(5));
+                    int name2 = Integer.parseInt(o2.getName().substring(0, o2.getName().length() - 4).substring(5));
+                    return Integer.compare(name1, name2);
+                })
+                .toArray(File[]::new);
     }
 
     //read in each image rgb file
