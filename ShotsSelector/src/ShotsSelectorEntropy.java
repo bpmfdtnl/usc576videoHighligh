@@ -193,9 +193,6 @@ public class ShotsSelectorEntropy {
         double entropy = 0.0;
 
         double[] PHue = getProbability(hueBin);
-        //for (int i = 0; i < PHue.length; i++){
-        //    System.out.print(PHue[i] + " ");
-        //}
         double[] PSaturation = getProbability(saturationBin);
         double[] PValue = getProbability(valueBin);
 
@@ -217,7 +214,6 @@ public class ShotsSelectorEntropy {
         }
         for (int i = 0; i < bin.length; i++){
             res[i] = bin[i] * 1.0 / sum * 1.0;
-            //System.out.print(res[i] + " ");
         }
         return res;
     }
