@@ -1,4 +1,5 @@
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import java.io.File;
@@ -23,6 +24,10 @@ public class PlaySound {
         clip.stop();
         clip.drain();
         clip.close();
+    }
+
+    public void copy() {
+
     }
 
 

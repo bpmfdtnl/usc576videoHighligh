@@ -44,8 +44,7 @@ public class MediaPlayer {
                     if (jfc.getSelectedFile().isDirectory()) {
                         videoPath = jfc.getSelectedFile().getPath();
                         toRead = VideoPlayer.readImages(videoPath);
-//                        videoFrames = toRead.length;
-                        videoFrames = 150;
+                        videoFrames = toRead.length;
                     }
                 }
             }

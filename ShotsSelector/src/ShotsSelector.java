@@ -8,21 +8,6 @@ import java.util.ArrayList;
  * @create: 4/23/21
  */
 
-class Shot {
-    int start;
-    int end;
-
-    public Shot(int start, int end) {
-        this.start = start;
-        this.end = end;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("%d %d\n", start, end);
-    }
-}
-
 public class ShotsSelector {
     File[] frames;
     int threshold = 50000;
