@@ -163,8 +163,8 @@ public class ShotsSelectorEntropy {
         int res = 0;
         if (hue <= 45) res = 0;
         else if (hue > 45 && hue <= 90) res = 1;
-        else if (hue > 45 && hue <= 90) res = 2;
-        else if (hue > 90 && hue <= 135) res = 3;
+        else if (hue > 90 && hue <= 135) res = 2;
+        else if (hue > 135 && hue <= 180) res = 3;
         else if (hue > 180 && hue <= 225) res = 4;
         else if (hue > 225 && hue <= 270) res = 5;
         else if (hue > 270 && hue <= 315) res = 6;
