@@ -30,17 +30,21 @@ public class ShotsMerger {
     File[] videoFrames;
     PlaySound audioPlayer = new PlaySound();
     File soundScoreFile;
-    ArrayList<Shot> shots = new ArrayList<>();
-    ArrayList<Double> soundScore = new ArrayList<>();
+    File entropyScoreFile;
+    File shotsIndexFile;
+
     String inputVideoDirectory;
     String inputAudioFile;
-    //Change these to save files to different folders
-    String outputVideoDirectory = "/Users/billwang/Desktop/output";
-    String outputAudio = "/Users/billwang/Desktop/output.wav";
+    String outputVideoDirectory = "/Users/billwang/Desktop/VideoData/output";
+    String outputAudio = "/Users/billwang/Desktop/VideoData/output.wav";
     String outputAudioDirectory = "/Users/billwang/Desktop/temp";
 
     //contains to be displayed shots
     ArrayList<Shot> selectedShots = new ArrayList<>();
+    ArrayList<Shot> shots = new ArrayList<>();
+    ArrayList<Double> soundScore = new ArrayList<>();
+    ArrayList<Double> entropyScore = new ArrayList<>();
+
 
 
     public ShotsMerger() {
@@ -48,6 +52,8 @@ public class ShotsMerger {
         JButton video = new JButton("Choose Frame");
         JButton audio = new JButton("Choose Audio");
         JButton soundScore = new JButton("Choose Sound Score File");
+        JButton entropyScore = new JButton("Choose Entropy Score File");
+        JButton shotsIndex = new JButton("Choose Shots index File");
         JButton merge = new JButton("Merge");
 
         video.addActionListener(new ActionListener() {
@@ -93,10 +99,35 @@ public class ShotsMerger {
 
                 int returnValue = jfc.showOpenDialog(null);
                 if (returnValue == JFileChooser.APPROVE_OPTION) {
-                    if (jfc.getSelectedFile().isDirectory()) {
-                        videoFrames = VideoPlayer.readImages(jfc.getSelectedFile().getPath());
-                    }
                     soundScoreFile = jfc.getSelectedFile();
+                }
+            }
+        });
+
+        entropyScore.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+                jfc.setDialogTitle("Choose a directory to save your file: ");
+                jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+                int returnValue = jfc.showOpenDialog(null);
+                if (returnValue == JFileChooser.APPROVE_OPTION) {
+                    entropyScoreFile = jfc.getSelectedFile();
+                }
+            }
+        });
+
+        shotsIndex.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+                jfc.setDialogTitle("Choose a directory to save your file: ");
+                jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+                int returnValue = jfc.showOpenDialog(null);
+                if (returnValue == JFileChooser.APPROVE_OPTION) {
+                    shotsIndexFile = jfc.getSelectedFile();
                 }
             }
         });
@@ -134,18 +165,30 @@ public class ShotsMerger {
             c.weightx = 0.5;
             c.gridx = 2;
             c.gridy = 0;
+            frame.add(shotsIndex, c);
+
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.weightx = 0.5;
+            c.gridx = 0;
+            c.gridy = 1;
             frame.add(soundScore, c);
 
             c.fill = GridBagConstraints.HORIZONTAL;
             c.weightx = 0.5;
-            c.gridx = 3;
-            c.gridy = 0;
+            c.gridx = 1;
+            c.gridy = 1;
+            frame.add(entropyScore, c);
+
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.weightx = 0.5;
+            c.gridx = 2;
+            c.gridy = 1;
             frame.add(merge, c);
 
             frame.setLocationRelativeTo(null);
             frame.pack();
             frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            frame.setSize(450, 300);
+            frame.setSize(650, 300);
             frame.setVisible(true);
         }
     }
@@ -178,26 +221,51 @@ public class ShotsMerger {
     public void readScore() {
         BufferedReader reader;
         try {
-            reader = new BufferedReader(new FileReader(soundScoreFile));
+            reader = new BufferedReader(new FileReader(shotsIndexFile));
             String line = reader.readLine();
             while (line != null) {
                 String[] oneLine = line.split(" ");
                 Shot shot = new Shot(Integer.parseInt(oneLine[0]), Integer.parseInt(oneLine[1]));
                 shots.add(shot);
-                soundScore.add(Double.parseDouble(oneLine[2]));
                 line = reader.readLine();
             }
             reader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        try {
+            reader = new BufferedReader(new FileReader(soundScoreFile));
+            String line = reader.readLine();
+            while (line != null) {
+                soundScore.add(Double.parseDouble(line));
+                line = reader.readLine();
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            reader = new BufferedReader(new FileReader(entropyScoreFile));
+            String line = reader.readLine();
+            while (line != null) {
+                entropyScore.add(Double.parseDouble(line));
+                line = reader.readLine();
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     //edit this to combine different scores
     public void selectFrames() {
         ArrayList<shotNScore> shotNScores = new ArrayList<>();
         for (int i = 0; i < soundScore.size(); i++) {
-            shotNScores.add(new shotNScore(shots.get(i), soundScore.get(i)));
+            double score = soundScore.get(i) * 100 + entropyScore.get(i);
+            shotNScores.add(new shotNScore(shots.get(i), score));
         }
 
         Collections.sort(shotNScores);

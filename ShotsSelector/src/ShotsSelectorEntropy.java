@@ -15,6 +15,7 @@ public class ShotsSelectorEntropy {
     final int alpha = 9;
     final int beta = 3;
     final int gamma = 1;
+    ArrayList<Double> entropyScore = new ArrayList<>();
 
 
     public ShotsSelectorEntropy(String folderPath) {
@@ -26,7 +27,7 @@ public class ShotsSelectorEntropy {
         JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
         jfc.setDialogTitle("Choose a directory to save your file: ");
         jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        ShotsSelectorEntropy shotsSelector;
+        ShotsSelectorEntropy shotsSelector = null;
         ArrayList<Shot> shots = new ArrayList<>();
 
         int returnValue = jfc.showOpenDialog(null);
@@ -40,7 +41,7 @@ public class ShotsSelectorEntropy {
 
         //write result to this file
         try {
-            FileWriter myWriter = new FileWriter("VideoShotsZ.txt");
+            FileWriter myWriter = new FileWriter("/Users/billwang/Desktop/VideoData/ShotsFrames.txt");
             for (Shot shot : shots) {
                 myWriter.write(shot.toString());
             }
@@ -48,23 +49,42 @@ public class ShotsSelectorEntropy {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        try {
+            FileWriter myWriter = new FileWriter("/Users/billwang/Desktop/VideoData/EntropyScore.txt");
+            for (double score : shotsSelector.entropyScore) {
+                myWriter.write(String.valueOf(score));
+                myWriter.write('\n');
+            }
+            myWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     //output arraylist of all shots with (start, end)
     private ArrayList<Shot> selectShots() {
+        double entropySum = 0;
         ArrayList<Shot> shots = new ArrayList<>();
         int frameNumber = this.frames.length;
         double prevEntropy = generateEntropy(frames[0]);
+        entropySum += prevEntropy;
         double currEntropy;
         int shotStartFrame = 0;
         for (int i = 1; i < frameNumber; i++) {
             currEntropy = generateEntropy(frames[i]);
             if (overThreshold(prevEntropy, currEntropy, i)) {
                 shots.add(new Shot(shotStartFrame, i));
+                entropyScore.add(entropySum / (i - shotStartFrame));
                 shotStartFrame = i;
+                entropySum = 0;
             }
+            entropySum += currEntropy;
             prevEntropy = currEntropy;
         }
+        entropyScore.add(entropySum / (frameNumber - 1 - shotStartFrame));
         shots.add(new Shot(shotStartFrame, frameNumber - 1));
         return shots;
     }
@@ -163,8 +183,8 @@ public class ShotsSelectorEntropy {
         int res = 0;
         if (hue <= 45) res = 0;
         else if (hue > 45 && hue <= 90) res = 1;
-        else if (hue > 45 && hue <= 90) res = 2;
-        else if (hue > 90 && hue <= 135) res = 3;
+        else if (hue > 90 && hue <= 135) res = 2;
+        else if (hue > 135 && hue <= 180) res = 3;
         else if (hue > 180 && hue <= 225) res = 4;
         else if (hue > 225 && hue <= 270) res = 5;
         else if (hue > 270 && hue <= 315) res = 6;
