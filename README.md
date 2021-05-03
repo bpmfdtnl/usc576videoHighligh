@@ -2,6 +2,9 @@
 
 The purpose of this project is to take a long video and output the highlight version of that video. This can be useful when generating thumbnails or highlights.
 
+## To Run
+Run the main function in MediaPlayer/CreateHighLight.
+
 ## Modules
 
 ### Media Player
