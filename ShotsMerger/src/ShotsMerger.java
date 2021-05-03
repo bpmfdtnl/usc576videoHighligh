@@ -135,9 +135,12 @@ public class ShotsMerger {
 
     //edit this to combine different scores
     public void selectFrames() {
+        double a = 1.5;
+        double b = 1;
+        double c = 0.2;
         ArrayList<shotNScore> shotNScores = new ArrayList<>();
         for (int i = 0; i < soundScore.size(); i++) {
-            double score = soundScore.get(i) * 100 + entropyScore.get(i) + motionScore.get(i);
+            double score = soundScore.get(i) * 100 * a + entropyScore.get(i) * b + motionScore.get(i) * c;
             shotNScores.add(new shotNScore(shots.get(i), score));
         }
 
