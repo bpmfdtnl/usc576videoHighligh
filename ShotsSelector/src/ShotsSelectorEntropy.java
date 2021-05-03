@@ -20,26 +20,7 @@ public class ShotsSelectorEntropy {
 
     public ShotsSelectorEntropy(String folderPath) {
         frames = VideoPlayer.readImages(folderPath);
-    }
-
-    public static void main(String[] args) {
-        //Get video directory
-        JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
-        jfc.setDialogTitle("Choose a directory to save your file: ");
-        jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        ShotsSelectorEntropy shotsSelector = null;
-        ArrayList<Shot> shots = new ArrayList<>();
-
-        int returnValue = jfc.showOpenDialog(null);
-        if (returnValue == JFileChooser.APPROVE_OPTION) {
-            if (jfc.getSelectedFile().isDirectory()) {
-                String folderPath = jfc.getSelectedFile().getPath();
-                shotsSelector = new ShotsSelectorEntropy(folderPath);
-                shots = shotsSelector.selectShots();
-            }
-        }
-
-        //write result to this file
+        ArrayList<Shot> shots =  this.selectShots();
         try {
             FileWriter myWriter = new FileWriter("/Users/billwang/Desktop/VideoData/ShotsFrames.txt");
             for (Shot shot : shots) {
@@ -52,7 +33,7 @@ public class ShotsSelectorEntropy {
 
         try {
             FileWriter myWriter = new FileWriter("/Users/billwang/Desktop/VideoData/EntropyScore.txt");
-            for (double score : shotsSelector.entropyScore) {
+            for (double score : this.entropyScore) {
                 myWriter.write(String.valueOf(score));
                 myWriter.write('\n');
             }
@@ -60,12 +41,10 @@ public class ShotsSelectorEntropy {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 
     //output arraylist of all shots with (start, end)
-    private ArrayList<Shot> selectShots() {
+    public ArrayList<Shot> selectShots() {
         double entropySum = 0;
         ArrayList<Shot> shots = new ArrayList<>();
         int frameNumber = this.frames.length;

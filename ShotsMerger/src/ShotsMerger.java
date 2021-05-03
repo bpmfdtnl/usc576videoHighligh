@@ -29,9 +29,9 @@ class shotNScore implements Comparable<shotNScore> {
 public class ShotsMerger {
     File[] videoFrames;
     PlaySound audioPlayer = new PlaySound();
-    File soundScoreFile;
-    File entropyScoreFile;
-    File shotsIndexFile;
+    File soundScoreFile = new File("/Users/billwang/Desktop/VideoData/AudioScore.txt");
+    File entropyScoreFile = new File("/Users/billwang/Desktop/VideoData/EntropyScore.txt");
+    File shotsIndexFile = new File("/Users/billwang/Desktop/VideoData/ShotsFrames.txt");
 
     String inputVideoDirectory;
     String inputAudioFile;
@@ -46,153 +46,16 @@ public class ShotsMerger {
     ArrayList<Double> entropyScore = new ArrayList<>();
 
 
-
-    public ShotsMerger() {
-        JFrame frame = new JFrame("Shot Merger");
-        JButton video = new JButton("Choose Frame");
-        JButton audio = new JButton("Choose Audio");
-        JButton soundScore = new JButton("Choose Sound Score File");
-        JButton entropyScore = new JButton("Choose Entropy Score File");
-        JButton shotsIndex = new JButton("Choose Shots index File");
-        JButton merge = new JButton("Merge");
-
-        video.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
-                jfc.setDialogTitle("Choose a directory to save your file: ");
-                jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-
-                int returnValue = jfc.showOpenDialog(null);
-                if (returnValue == JFileChooser.APPROVE_OPTION) {
-                    if (jfc.getSelectedFile().isDirectory()) {
-                        inputVideoDirectory = jfc.getSelectedFile().getPath();
-                        videoFrames = VideoPlayer.readImages(inputVideoDirectory);
-                    }
-                }
-            }
-        });
-
-        //open port to play audio
-        audio.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
-                jfc.setDialogTitle("Choose a dot wav file: ");
-                jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                int returnValue = jfc.showOpenDialog(null);
-                if (returnValue == JFileChooser.APPROVE_OPTION) {
-                    if (jfc.getSelectedFile().isFile()) {
-                        inputAudioFile = jfc.getSelectedFile().getPath();
-                        audioPlayer.loadFile(inputAudioFile);
-                    }
-                }
-            }
-        });
-
-        soundScore.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
-                jfc.setDialogTitle("Choose a directory to save your file: ");
-                jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
-                int returnValue = jfc.showOpenDialog(null);
-                if (returnValue == JFileChooser.APPROVE_OPTION) {
-                    soundScoreFile = jfc.getSelectedFile();
-                }
-            }
-        });
-
-        entropyScore.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
-                jfc.setDialogTitle("Choose a directory to save your file: ");
-                jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
-                int returnValue = jfc.showOpenDialog(null);
-                if (returnValue == JFileChooser.APPROVE_OPTION) {
-                    entropyScoreFile = jfc.getSelectedFile();
-                }
-            }
-        });
-
-        shotsIndex.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
-                jfc.setDialogTitle("Choose a directory to save your file: ");
-                jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
-                int returnValue = jfc.showOpenDialog(null);
-                if (returnValue == JFileChooser.APPROVE_OPTION) {
-                    shotsIndexFile = jfc.getSelectedFile();
-                }
-            }
-        });
-
-        merge.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                readScore();
-                selectFrames();
-                copyToFolder();
-                modifyWav();
-                merge.setText("Finished!!!");
-            }
-        });
-
-        //GUI layout
-        {
-            frame.setLayout(new GridBagLayout());
-            GridBagConstraints c = new GridBagConstraints();
-            //natural height, maximum width
-            c.fill = GridBagConstraints.HORIZONTAL;
-
-            c.weightx = 0.5;
-            c.gridx = 0;
-            c.gridy = 0;
-            frame.add(video, c);
-
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.weightx = 0.5;
-            c.gridx = 1;
-            c.gridy = 0;
-            frame.add(audio, c);
-
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.weightx = 0.5;
-            c.gridx = 2;
-            c.gridy = 0;
-            frame.add(shotsIndex, c);
-
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.weightx = 0.5;
-            c.gridx = 0;
-            c.gridy = 1;
-            frame.add(soundScore, c);
-
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.weightx = 0.5;
-            c.gridx = 1;
-            c.gridy = 1;
-            frame.add(entropyScore, c);
-
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.weightx = 0.5;
-            c.gridx = 2;
-            c.gridy = 1;
-            frame.add(merge, c);
-
-            frame.setLocationRelativeTo(null);
-            frame.pack();
-            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            frame.setSize(650, 300);
-            frame.setVisible(true);
-        }
+    public ShotsMerger(String videoFramesString, String audioFileString){
+        inputVideoDirectory = videoFramesString;
+        inputAudioFile = audioFileString;
+        videoFrames = VideoPlayer.readImages(inputVideoDirectory);
+        audioPlayer.loadFile(inputAudioFile);
+        readScore();
+        selectFrames();
+        copyToFolder();
+        modifyWav();
     }
-
 
     //edit .wav file
     public void modifyWav() {
@@ -294,7 +157,4 @@ public class ShotsMerger {
         }
     }
 
-    public static void main(String[] args) {
-        ShotsMerger shotsMerger = new ShotsMerger();
-    }
 }
