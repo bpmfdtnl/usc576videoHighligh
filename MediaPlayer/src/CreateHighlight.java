@@ -15,11 +15,11 @@ public class CreateHighlight {
     static String inputAudioFile;
 
     public static void main(String[] args) {
+        long start = System.currentTimeMillis();
         JFrame frame = new JFrame("Shot Merger");
         JButton video = new JButton("Choose Frame");
         JButton audio = new JButton("Choose Audio");
-        JButton create = new JButton("Merge");
-        JButton status = new JButton("ready");
+        JButton create = new JButton("Create Highlight");
 
         video.addActionListener(new ActionListener() {
             @Override
@@ -56,7 +56,6 @@ public class CreateHighlight {
         create.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                status.setText("Selecting Shots");
                 ShotsSelectorEntropy selector = new ShotsSelectorEntropy(inputVideoDirectory);
                 String[] cmd = new String[]{"/Users/billwang/.pyenv/versions/3.8.0/bin/python", "/Users/billwang/Documents/GitHub/usc576videoHighligh/AudioScoring/audio-process.py", inputAudioFile, "/Users/billwang/Desktop/VideoData/ShotsFrames.txt", "/Users/billwang/Desktop/VideoData/AudioScore.txt"};
                 try {
@@ -65,7 +64,7 @@ public class CreateHighlight {
                     ioException.printStackTrace();
                 }
                 File temp = new File("/Users/billwang/Desktop/VideoData/AudioScore.txt");
-                while (!temp.exists()){
+                while (!temp.exists()) {
                     System.out.println("waiting");
                     try {
                         Thread.sleep(1000);
@@ -73,9 +72,12 @@ public class CreateHighlight {
                         interruptedException.printStackTrace();
                     }
                 }
-                status.setText("Scoring Shots");
                 ShotsMerger merger = new ShotsMerger(inputVideoDirectory, inputAudioFile);
-                status.setText("Finished");
+                long finish = System.currentTimeMillis();
+                long millis = finish - start;
+                long seconds = (millis / 1000) % 60;
+                long minutes = ((millis / 1000 - seconds)) / 60;
+                create.setText(String.format("Finished in %d minutes %d seconds", minutes, seconds));
             }
         });
 
@@ -103,17 +105,11 @@ public class CreateHighlight {
             c.gridy = 0;
             frame.add(create, c);
 
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.weightx = 0.5;
-            c.gridx = 1;
-            c.gridy = 1;
-            frame.add(status, c);
-
 
             frame.setLocationRelativeTo(null);
             frame.pack();
             frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            frame.setSize(350, 100);
+            frame.setSize(550, 100);
             frame.setVisible(true);
         }
     }

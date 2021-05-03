@@ -16,6 +16,7 @@ public class ShotsSelectorEntropy {
     final int beta = 3;
     final int gamma = 1;
     ArrayList<Double> entropyScore = new ArrayList<>();
+    ArrayList<Double> motionScore = new ArrayList<>();
 
 
     public ShotsSelectorEntropy(String folderPath) {
@@ -41,11 +42,23 @@ public class ShotsSelectorEntropy {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        try {
+            FileWriter myWriter = new FileWriter("/Users/billwang/Desktop/VideoData/MotionScore.txt");
+            for (double score : this.motionScore) {
+                myWriter.write(String.valueOf(score));
+                myWriter.write('\n');
+            }
+            myWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     //output arraylist of all shots with (start, end)
     public ArrayList<Shot> selectShots() {
         double entropySum = 0;
+        double motionSum = 0;
         ArrayList<Shot> shots = new ArrayList<>();
         int frameNumber = this.frames.length;
         double prevEntropy = generateEntropy(frames[0]);
@@ -54,18 +67,71 @@ public class ShotsSelectorEntropy {
         int shotStartFrame = 0;
         for (int i = 1; i < frameNumber; i++) {
             currEntropy = generateEntropy(frames[i]);
+            motionSum += calculateMotionDiff(frames[i - 1], frames[i]);
             if (overThreshold(prevEntropy, currEntropy, i)) {
                 shots.add(new Shot(shotStartFrame, i));
                 entropyScore.add(entropySum / (i - shotStartFrame));
+                motionScore.add(motionSum / (i - shotStartFrame) / 100000);
                 shotStartFrame = i;
                 entropySum = 0;
+                motionSum = 0;
             }
             entropySum += currEntropy;
             prevEntropy = currEntropy;
         }
         entropyScore.add(entropySum / (frameNumber - 1 - shotStartFrame));
+        motionScore.add(motionSum / (frameNumber - 1 - shotStartFrame) / 100000);
         shots.add(new Shot(shotStartFrame, frameNumber - 1));
         return shots;
+    }
+
+    private double calculateMotionDiff(File prevFrame, File currFrame) {
+        double sum = 0;
+        try {
+            int width = 320;
+            int height = 180;
+            int frameLength = width * height * 3;
+
+            RandomAccessFile raf = new RandomAccessFile(prevFrame, "r");
+            RandomAccessFile raf2 = new RandomAccessFile(currFrame, "r");
+
+            raf.seek(0);
+            raf2.seek(0);
+
+
+            long len = frameLength;
+            byte[] bytes = new byte[(int) len];
+            byte[] bytes2 = new byte[(int) len];
+
+
+            raf.read(bytes);
+            raf2.read(bytes2);
+
+            int ind = 0;
+
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    int r = Byte.toUnsignedInt(bytes[ind]);
+                    int g = Byte.toUnsignedInt(bytes[ind + height * width]);
+                    int b = Byte.toUnsignedInt(bytes[ind + height * width * 2]);
+
+                    int r2 = Byte.toUnsignedInt(bytes2[ind]);
+                    int g2 = Byte.toUnsignedInt(bytes2[ind + height * width]);
+                    int b2 = Byte.toUnsignedInt(bytes2[ind + height * width * 2]);
+
+                    sum += Math.abs(r - r2);
+                    sum += Math.abs(g - g2);
+                    sum += Math.abs(b - b2);
+
+
+                    ind++;
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return sum;
     }
 
     //check if the difference is over the threshold

@@ -1,8 +1,3 @@
-import javax.swing.*;
-import javax.swing.filechooser.FileSystemView;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +27,7 @@ public class ShotsMerger {
     File soundScoreFile = new File("/Users/billwang/Desktop/VideoData/AudioScore.txt");
     File entropyScoreFile = new File("/Users/billwang/Desktop/VideoData/EntropyScore.txt");
     File shotsIndexFile = new File("/Users/billwang/Desktop/VideoData/ShotsFrames.txt");
+    File motionScoreFile = new File("/Users/billwang/Desktop/VideoData/MotionScore.txt");
 
     String inputVideoDirectory;
     String inputAudioFile;
@@ -44,6 +40,8 @@ public class ShotsMerger {
     ArrayList<Shot> shots = new ArrayList<>();
     ArrayList<Double> soundScore = new ArrayList<>();
     ArrayList<Double> entropyScore = new ArrayList<>();
+    ArrayList<Double> motionScore = new ArrayList<>();
+
 
 
     public ShotsMerger(String videoFramesString, String audioFileString){
@@ -121,13 +119,25 @@ public class ShotsMerger {
             e.printStackTrace();
         }
 
+        try {
+            reader = new BufferedReader(new FileReader(motionScoreFile));
+            String line = reader.readLine();
+            while (line != null) {
+                motionScore.add(Double.parseDouble(line));
+                line = reader.readLine();
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     //edit this to combine different scores
     public void selectFrames() {
         ArrayList<shotNScore> shotNScores = new ArrayList<>();
         for (int i = 0; i < soundScore.size(); i++) {
-            double score = soundScore.get(i) * 100 + entropyScore.get(i);
+            double score = soundScore.get(i) * 100 + entropyScore.get(i) + motionScore.get(i);
             shotNScores.add(new shotNScore(shots.get(i), score));
         }
 
